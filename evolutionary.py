@@ -7,68 +7,70 @@ from random import choice
 class Evolutionary:
     individual_size = 81
 
-    def __init__(self, sudoku, config_path="config.txt"):
+    def __init__(self, sudoku:Sudoku, config_path:str="config.txt"):
+        """"""
         self.sudoku = sudoku
         self.get_config(config_path)
     
     # TECHNICAL METHODS
-    def get_config(self, path):
+    def get_config(self, path:str) -> None:
+        """"""
         with open(path, "rt") as config:
             line = config.readline()
-            self.number_generation = int(line[18::])
+            self.number_generation = int(line[line.index('=')+1::])
             line = config.readline()
-            self.population_size = int(line[16::])
+            self.population_size = int(line[line.index('=')+1::])
             line = config.readline()
-            self.truncation_rate = float(line[16::])
+            self.truncation_rate = float(line[line.index('=')+1::])
             line = config.readline()
-            self.mutation_rate = (1.0 / self.individual_size) * float(line[14::])
+            self.mutation_rate = int(line[line.index('=')+1::])
 
     # INDIVIDUAL LEVEL METHODS
-    def initialise(self):
+    def initialise(self) -> Sudoku:
         """Randomly populates all blank tiles of a sudoku with random numbers."""
         return Sudoku(layout=[choice(Sudoku.INT_RANGE) if number == 0 else number for number in self.sudoku.layout])
-        
-    def crossover(self, sudoku_x, sudoku_y):
+    
+    def crossover(self, parent_sudoku_a:Sudoku, parent_sudoku_b:Sudoku) -> Sudoku:
         """Combines two sudoku boards into one child board based on randomness of selection."""
         # If the difference between sudoku_x and sudoku_y is of two or less values, let the child be randomised from scrap to ensure genetic diversity:
-        if len(sudoku_x.compare(sudoku_y)) <= 2:
+        if len(parent_sudoku_a.compare(parent_sudoku_b)) <= 10:
             return self.initialise()
         else:
-            return Sudoku(layout=[choice([sudoku_x.layout[number], sudoku_y.layout[number]]) for number in range(self.individual_size)])
+            return Sudoku(layout=[choice([parent_sudoku_a.layout[number], parent_sudoku_b.layout[number]]) for number in range(self.individual_size)])
         
-    def mutate(self, sudoku):
+    def mutate(self, sudoku:Sudoku) -> Sudoku:
         """Takes a sudoku and produces a mutated version of the configuration with a chance of having modified values 
         depending on the mutation rate."""
         return Sudoku(layout=[choice(Sudoku.INT_RANGE) if type(number) == int and random.random() < self.mutation_rate else number for number in sudoku.layout])
     
     # GENERATION LEVEL METHODS
     
-    def select(self, generation:list) -> list:
+    def select(self, generation:list[Sudoku]) -> list[Sudoku]:
         """Returns the top fittest sudoku boards from a generation."""
         sorted_population = sorted(generation, key = lambda x: x.fitness)
         truncation_threshold = int(self.population_size*self.truncation_rate)
         return [choice(sorted_population[truncation_threshold:]) if random.randint(0,9) == 5 else sudoku for sudoku in sorted_population[:truncation_threshold]]
 
-    def fittest(self, generation:list) -> list:
+    @staticmethod
+    def fittest(generation:list) -> Sudoku:
         """Returns the fittest sudoku board from a generation."""
         return sorted(generation, key = lambda x: x.fitness)[0]
     
     # EXECUTION 
 
-    def solve(self):
+    def solve(self) -> float:
+        """
+        """
         generation = []
         # Initialising the population:
         for _ in range(self.population_size):
             generation.append(self.initialise())
-            
         increment = 0
         beginning = time.time()
         while True:
             increment += 1
-
             # Selecting the best individuals of the current generation:
             selection = self.select(generation)
-        
             generation = []
             for _ in range(self.population_size):
                 # Selection:
@@ -84,7 +86,6 @@ class Evolutionary:
             fittest = self.fittest(generation)
             print("\nGeneration number " + str(increment) + ": ")
             print(fittest.display() + " \n-- " + str(fittest.fitness))
-            
             if fittest.fitness == 0 or increment == self.number_generation:
                 print(fittest.display())
                 break

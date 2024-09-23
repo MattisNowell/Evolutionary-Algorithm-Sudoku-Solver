@@ -1,6 +1,4 @@
 ## SUDOKU FUNCTIONS
-
-
 class Sudoku:
     INT_RANGE = (1,2,3,4,5,6,7,8,9)
 
@@ -49,6 +47,7 @@ class Sudoku:
         return tostring
 
     def compare(self, sudoku):
+        """"""
         diff = [] 
         for number in range(len(self.layout)):
             if self.layout[number] != sudoku.layout[number]:
@@ -56,6 +55,7 @@ class Sudoku:
         return diff
     
     def read_file(self, path:str):
+        """"""
         layout = []
         with open(path, 'rt') as file:
             input = file.read()
@@ -74,13 +74,10 @@ class Sudoku:
         for i in range(0,9):
             # And for each number a sub-structure should have:
             for number in self.INT_RANGE:
-                # Check if the number is contained in the column:
                 if number not in self.column(i):
                     fitness += 1
-                # Check if the number is contained in the row:
                 if number not in self.row(i):
                     fitness += 1
-                # Check if the number is contained in the grid:
                 if number not in self.grid(i):
                     fitness += 1
         return fitness
