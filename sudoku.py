@@ -68,7 +68,7 @@ class Sudoku:
         return layout
     
     def get_fitness(self) -> int:
-        """Evaluates a given sudoku configuration through an integer value."""
+        """Evaluates a given sudoku configuration as an integer value."""
         fitness:int = 0
         # For each sub-structure contained in a sudoku board:
         for i in range(0,9):
